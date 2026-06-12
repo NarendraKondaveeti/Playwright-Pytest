@@ -1,9 +1,7 @@
 from config.settings import Settings
-
 from pages.add_remove_elements_page import (
     AddRemoveElementsPage
 )
-
 
 def test_add_remove_elements(page):
 
