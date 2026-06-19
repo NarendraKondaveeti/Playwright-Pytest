@@ -36,3 +36,8 @@ def test_context_menu(page):
         alert_message
         == "You selected a context menu"
     )
+    page.mouse.click(
+        100,
+        100,
+        button="left"
+    )

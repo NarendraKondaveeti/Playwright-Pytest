@@ -22,7 +22,7 @@ def browser(browser_name):
         browser.close()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def page(browser):
 
     context = browser.new_context()
