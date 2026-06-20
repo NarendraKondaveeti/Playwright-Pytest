@@ -14,7 +14,7 @@ def browser(browser_name):
             browser_name
         ).launch(
             headless=False,
-            slow_mo=1000
+            slow_mo=3000
         )
 
         yield browser
