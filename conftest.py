@@ -56,7 +56,9 @@ def context(
     context.tracing.start(
 
         screenshots=True,
+
         snapshots=True,
+
         sources=True
     )
 
@@ -66,6 +68,10 @@ def context(
         request.node.funcargs.get(
             "page"
         )
+    )
+
+    test_name = (
+        request.node.name
     )
 
     # ==============================
@@ -80,10 +86,6 @@ def context(
             and
             request.node.rep_call.failed
     ):
-
-        test_name = (
-            request.node.name
-        )
 
         # --------------------------
         # Screenshot
@@ -146,11 +148,70 @@ def context(
             allure.attachment_type.ZIP
         )
 
+        # --------------------------
+        # Video
+        # --------------------------
+
+        video = page.video
+
+        context.close()
+
+        if video:
+
+            os.makedirs(
+                "reports/videos",
+                exist_ok=True
+            )
+
+            video_path = (
+                f"reports/videos/"
+                f"{test_name}.webm"
+            )
+
+            video.save_as(
+                video_path
+            )
+
+            allure.attach.file(
+
+                video_path,
+
+                name=
+                "Failure Video",
+
+                attachment_type=
+                allure.attachment_type.WEBM
+            )
+
     else:
 
         context.tracing.stop()
 
-    context.close()
+        video = page.video
+
+        context.close()
+
+        # --------------------------
+        # Delete PASS Videos
+        # --------------------------
+
+        if video:
+
+            try:
+
+                video_path = (
+                    video.path()
+                )
+
+                if os.path.exists(
+                        video_path
+                ):
+                    os.remove(
+                        video_path
+                    )
+
+            except Exception:
+                pass
 
 
 # ======================================

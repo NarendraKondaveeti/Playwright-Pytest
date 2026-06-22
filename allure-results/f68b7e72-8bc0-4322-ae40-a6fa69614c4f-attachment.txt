@@ -1,0 +1,13 @@
+
+Editor is READ ONLY
+Message: TinyMCE is in read-only mode because you have no more editor loads available this month.
+Please request that the admin
+upgrade your plan
+
+or add a valid payment method for additional editor load charges.
+Learn more.
+
+
+
+
+PASS : Editor is read-only. Text entry is not allowed.
