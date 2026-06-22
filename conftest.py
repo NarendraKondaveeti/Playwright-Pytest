@@ -6,7 +6,6 @@ import os
 import pytest
 import allure
 
-
 # ======================================
 # Hook for Test Result
 # ======================================
@@ -26,7 +25,6 @@ def pytest_runtest_makereport(
         "rep_" + report.when,
         report
     )
-
 
 # ======================================
 # Context Fixture

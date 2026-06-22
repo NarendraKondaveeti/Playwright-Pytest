@@ -6,3 +6,4 @@ python-dotenv
 pytest-html
 requests
 faker
+pytest-xdist
