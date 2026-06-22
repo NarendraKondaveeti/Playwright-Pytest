@@ -3,12 +3,40 @@ from fixtures.api_fixture import *
 from fixtures.db_fixture import *
 
 import os
-import allure
 import pytest
+import allure
 
+
+# ======================================
+# Hook for Test Result
+# ======================================
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(
+        item,
+        call
+):
+
+    outcome = yield
+
+    report = outcome.get_result()
+
+    setattr(
+        item,
+        "rep_" + report.when,
+        report
+    )
+
+
+# ======================================
+# Context Fixture
+# ======================================
 
 @pytest.fixture
-def context(browser):
+def context(
+        browser,
+        request
+):
 
     context = browser.new_context(
 
@@ -23,23 +51,111 @@ def context(browser):
 
         record_video_dir=
         "reports/videos"
-
     )
-
-    # Start Trace
 
     context.tracing.start(
 
         screenshots=True,
         snapshots=True,
         sources=True
-
     )
 
     yield context
 
+    page = (
+        request.node.funcargs.get(
+            "page"
+        )
+    )
+
+    # ==============================
+    # Failed Test Only
+    # ==============================
+
+    if (
+            hasattr(
+                request.node,
+                "rep_call"
+            )
+            and
+            request.node.rep_call.failed
+    ):
+
+        test_name = (
+            request.node.name
+        )
+
+        # --------------------------
+        # Screenshot
+        # --------------------------
+
+        os.makedirs(
+            "reports/screenshots",
+            exist_ok=True
+        )
+
+        screenshot_path = (
+            f"reports/screenshots/"
+            f"{test_name}.png"
+        )
+
+        page.screenshot(
+
+            path=screenshot_path,
+
+            full_page=True
+        )
+
+        allure.attach.file(
+
+            screenshot_path,
+
+            name=
+            "Failure Screenshot",
+
+            attachment_type=
+            allure.attachment_type.PNG
+        )
+
+        # --------------------------
+        # Trace
+        # --------------------------
+
+        os.makedirs(
+            "reports/traces",
+            exist_ok=True
+        )
+
+        trace_path = (
+            f"reports/traces/"
+            f"{test_name}.zip"
+        )
+
+        context.tracing.stop(
+            path=trace_path
+        )
+
+        allure.attach.file(
+
+            trace_path,
+
+            name=
+            "Trace File",
+
+            attachment_type=
+            allure.attachment_type.ZIP
+        )
+
+    else:
+
+        context.tracing.stop()
+
     context.close()
 
+
+# ======================================
+# Page Fixture
+# ======================================
 
 @pytest.fixture
 def page(context):
@@ -49,114 +165,3 @@ def page(context):
     yield page
 
     page.close()
-
-
-@pytest.hookimpl(hookwrapper=True)
-def pytest_runtest_makereport(
-        item,
-        call
-):
-
-    outcome = yield
-
-    report = outcome.get_result()
-
-    if report.when != "call":
-        return
-
-    page = item.funcargs.get(
-        "page"
-    )
-
-    if not page:
-        return
-
-    test_name = item.name
-
-    # -------------------
-    # Screenshot
-    # -------------------
-
-    screenshot_path = (
-        f"reports/screenshots/"
-        f"{test_name}.png"
-    )
-
-    os.makedirs(
-        "reports/screenshots",
-        exist_ok=True
-    )
-
-    page.screenshot(
-        path=screenshot_path,
-        full_page=True
-    )
-
-    allure.attach.file(
-
-        screenshot_path,
-
-        name="Screenshot",
-
-        attachment_type=
-        allure.attachment_type.PNG
-
-    )
-
-    # -------------------
-    # Trace
-    # -------------------
-
-    trace_path = (
-        f"reports/traces/"
-        f"{test_name}.zip"
-    )
-
-    os.makedirs(
-        "reports/traces",
-        exist_ok=True
-    )
-
-    page.context.tracing.stop(
-        path=trace_path
-    )
-
-    allure.attach.file(
-
-        trace_path,
-
-        name="Trace",
-
-        attachment_type=
-        allure.attachment_type.ZIP
-
-    )
-
-    # -------------------
-    # Video
-    # -------------------
-
-    try:
-
-        video_path = (
-            page.video.path()
-        )
-
-        if os.path.exists(
-                video_path
-        ):
-
-            allure.attach.file(
-
-                video_path,
-
-                name="Video",
-
-                attachment_type=
-                allure.attachment_type.WEBM
-
-            )
-
-    except Exception:
-
-        pass
