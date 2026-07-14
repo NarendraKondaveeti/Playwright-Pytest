@@ -6,4 +6,4 @@ with sync_playwright() as p:  #  Playwright: Starting Playwright context (intern
     context = browser.new_context()  #  Playwright: Creating a new browser session (like a new Chrome profile)
     page = context.new_page()  #  Playwright: Opening a new tab in the browser
     page.goto("https://google.com")  #  Playwright: Navigating to the website
-    page.locator("#APjFqb").fill("playwright")
+    page.locator("#APjFqb").fill("playwright" )
